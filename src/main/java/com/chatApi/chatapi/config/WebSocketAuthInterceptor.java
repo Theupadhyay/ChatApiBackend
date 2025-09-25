@@ -1,4 +1,4 @@
 package com.chatApi.chatapi.config;
+class WebSocketAuthInterceptor{
 
-public class WebSocketAuthInterceptor {
 }

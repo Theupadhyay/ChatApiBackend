@@ -1,6 +1,7 @@
 package com.chatApi.chatapi.controller;
 
 import com.chatApi.chatapi.dto.MessageDto;
+import com.chatApi.chatapi.dto.SendMessageRequest;
 import com.chatApi.chatapi.entity.Message;
 import com.chatApi.chatapi.entity.User;
 import com.chatApi.chatapi.service.MessageService;
@@ -20,17 +21,23 @@ public class MessageController {
 
     // POST /api/messages/send
     @PostMapping("/send")
-    public ResponseEntity<MessageDto> sendMessage(@RequestParam Long roomId, @RequestBody String content, Authentication authentication) {
+    public ResponseEntity<MessageDto> sendMessage(@RequestBody SendMessageRequest request,
+                                                  Authentication authentication) {
+        // Get current user from JWT (adjust if your principal isn’t User directly)
         User current = (User) authentication.getPrincipal();
-        Message msg = messageService.sendMessage(roomId, current.getId(), content);
+
+        Message msg = messageService.sendMessage(request.roomId, current.getId(), request.content);
+
         MessageDto dto = new MessageDto();
         dto.id = msg.getId();
         dto.roomId = msg.getRoom().getId();
         dto.senderId = msg.getSender().getId();
         dto.content = msg.getContent();
         dto.timestamp = msg.getTimestamp();
+
         return ResponseEntity.ok(dto);
     }
+
 
     // GET /api/messages/history/{roomId}
     @GetMapping("/history/{roomId}")

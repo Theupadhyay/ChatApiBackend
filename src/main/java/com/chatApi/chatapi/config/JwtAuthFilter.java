@@ -2,14 +2,17 @@ package com.chatApi.chatapi.config;
 
 import com.chatApi.chatapi.entity.User;
 import com.chatApi.chatapi.repository.UserRepository;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,6 +20,8 @@ import java.util.Optional;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
@@ -37,7 +42,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws IOException, jakarta.servlet.ServletException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
         try {
             String jwt = parseJwt(request);
             if (jwt != null && jwtTokenProvider.validateToken(jwt)) {
@@ -46,19 +53,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     Optional<User> userOpt = userRepository.findById(userId);
                     if (userOpt.isPresent()) {
                         User user = userOpt.get();
+
+                        // For now we assign a single USER authority
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(
-                                        user,
+                                        user, // or user.getUsername()
                                         null,
                                         List.of(new SimpleGrantedAuthority("USER"))
                                 );
+
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
                 }
             }
         } catch (Exception e) {
-            // log if needed
+            LOG.debug("JWT authentication filter exception: {}", e.getMessage());
         }
+
         filterChain.doFilter(request, response);
     }
 }

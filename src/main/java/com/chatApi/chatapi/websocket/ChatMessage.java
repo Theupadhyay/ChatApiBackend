@@ -12,7 +12,11 @@ public class ChatMessage {
     public ChatMessage() {}
 
     public ChatMessage(Long id, Long roomId, Long senderId, String content, Instant timestamp) {
-        this.id = id; this.roomId = roomId; this.senderId = senderId; this.content = content; this.timestamp = timestamp;
+        this.id = id;
+        this.roomId = roomId;
+        this.senderId = senderId;
+        this.content = content;
+        this.timestamp = timestamp;
     }
 
     // getters & setters

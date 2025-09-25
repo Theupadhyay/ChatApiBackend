@@ -10,15 +10,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // websocket entrypoint (clients connect here)
-        registry.addEndpoint("/ws-chat").setAllowedOriginPatterns("*").withSockJS();
+        // Raw WebSocket endpoint (NO SockJS)
+        registry.addEndpoint("/ws-chat")
+                .addInterceptors(new WebSocketHandshakeInterceptor())
+                .setAllowedOriginPatterns("*"); // allow all origins for testing
     }
 
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry config) {
-        // messages sent to destinations prefixed with /app will be routed to @MessageMapping
-        config.setApplicationDestinationPrefixes("/app");
-        // enable simple broker to broadcast messages to subscribers
-        config.enableSimpleBroker("/topic");
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.setApplicationDestinationPrefixes("/app");
+        registry.enableSimpleBroker("/topic");
     }
 }
